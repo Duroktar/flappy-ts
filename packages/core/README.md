@@ -1,9 +1,6 @@
-# Project Template
+# Flappy-ts
 
-A project template with ES6 support via [Webpack 4](https://webpack.js.org/) and [Typescript](https://typescript.com)
-that includes hot-reloading for development and production-ready builds.
-
-Loading images via JavaScript module `import` is also supported.
+An HTML5 Canvas FlappyBird clone written in Typescript
 
 ## Requirements
 
@@ -27,7 +24,34 @@ After starting the development server with `npm start`, you can edit any files i
 and webpack will automatically recompile and reload your server (available at `http://localhost:8080`
 by default).
 
-## Customizing Template
+## Development
+
+### Appendix
+  - GUI / UI logic: Application.ts (render*)
+  - Input logic: Application.ts (registerListeners)
+  - Launch, Pause & Restart logic: index.ts
+  - Flappy logic: GameObjects.ts (Flappy)
+  - Pipe logic: GameObjects.ts (Pipe)
+  - Level logic: GameObjects.ts (Level)
+  - Collision & Win/Lose logic: GameObjects.ts (Level)
+  - State & Persistance: GameContext.ts
+  - Bootstrapping logic: helpers.ts
+
+
+### Newbie Guide
+
+#### Application (Application.ts)
+  - public API has a run and a stop method
+  - run starts the game (it invokes the mainloop method)
+  - stop (ahem..) stops the game
+
+#### GameObject (GameObjects.ts)
+  - public API has a render and an update method*
+  - update computes the next state
+  - render draws the state to the screen
+> *Some, like Flappy (see flappy.flap() method), have other public methods as well.
+
+## Customizing Build
 
 ### Webpack
 If you want to customize your build, such as adding a new webpack loader or plugin (i.e. for loading CSS or fonts), you can

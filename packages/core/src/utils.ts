@@ -22,6 +22,7 @@ export function numInWords (number: number) {
   const first = ['','one ','two ','three ','four ', 'five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
   const tens = ['', '', 'twenty','thirty','forty','fifty', 'sixty','seventy','eighty','ninety'];
   const mad = ['', 'thousand', 'million', 'billion', 'trillion'];
+  const hundred = 'hundred ';
   let word = '';
 
   for (let i = 0; i < mad.length; i++) {
@@ -35,7 +36,13 @@ export function numInWords (number: number) {
     }
 
     tempNumber = number%(Math.pow(1000,i+1));
-    if (Math.floor(tempNumber/(100*Math.pow(1000,i))) !== 0) word = first[Math.floor(tempNumber/(100*Math.pow(1000,i)))] + 'hunderd ' + word;
+    if (Math.floor(tempNumber/(100*Math.pow(1000,i))) !== 0) word = first[Math.floor(tempNumber/(100*Math.pow(1000,i)))] + hundred + word;
   }
     return word.trim();
+}
+
+export function getRandomInt(min: number, max: number) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }

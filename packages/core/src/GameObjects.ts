@@ -1,7 +1,12 @@
-import { GameObject } from './Renderable'
 import { GameCtx, Transform } from './types'
 import { rectCircleColliding } from './utils'
 import flappyImage from '../assets/flappy.png'
+
+export abstract class GameObject {
+  readonly transform!: Transform
+  abstract update(ctx: GameCtx): void
+  abstract render(ctx: GameCtx): void
+}
 
 export class Flappy extends GameObject {
   public size: number = 30
@@ -16,10 +21,8 @@ export class Flappy extends GameObject {
     this.initializeImage()
   }
   private initializeImage() {
-    this.image = new Image()
+    this.image = new Image(this.size, this.size)
     this.image.src = flappyImage
-    this.image.width = this.size
-    this.image.height = this.size
   }
   public jump() {
     if (this.timer) clearTimeout(this.timer)
@@ -28,7 +31,7 @@ export class Flappy extends GameObject {
     }, this.jumpDecay)
     this.jumping = true
   }
-  public update(/* ctx: GameCtx */): void {
+  public update(): void {
     const { x, y } = this.transform
     this.transform = {
       x, y: this.jumping ? y - this.jumpSpeed : y + this.fallSpeed
@@ -43,24 +46,25 @@ export class Flappy extends GameObject {
 
 export class Pipe extends GameObject {
   public width: number = 110
-  public gapSize: number = 140
   private speed: number = 3
   private direction: 'up' | 'down' = 'up'
-  private maxGapTop: number = 50
+  private minGapTop: number = 50
   private maxGapBtm: number = 550
-  constructor(public transform: Transform) {
+  constructor(
+    public transform: Transform,
+    public gapSize: number,
+  ) {
     super()
   }
-  public update(/* ctx: GameCtx */): void {
+  public update(): void {
     const { x, y } = this.transform
     if (this.transform.y > this.maxGapBtm - (this.gapSize * 0.5))
       this.direction = 'up'
-    if (this.transform.y < this.maxGapTop + (this.gapSize * 0.5))
+    if (this.transform.y < this.minGapTop + (this.gapSize * 0.5))
       this.direction = 'down'
 
     this.transform = {
       x: x - this.speed,
-      // x,
       y: this.direction === 'down' ? y + this.speed : y - this.speed,
     }
   }
@@ -74,41 +78,47 @@ export class Pipe extends GameObject {
 }
 
 export class Level extends GameObject {
-  public score: number = 0
   public gameover: boolean = false
   public levelWon: boolean = false
-  constructor(public levelNo: number) {
-    super()
-  }
+  public score: number = 0
   update(ctx: GameCtx): void {
     const { canvasEl: canvas } = ctx
+    // get a handle on flappy, he's always the last item in the gameObject list
     const flappy = ctx.gameObjects[ctx.gameObjects.length-1]
     const { transform: {x: fx, y: fy}, size } = <Flappy>flappy
+
+    // check if flappy is out of screen vBounds and punish him accordingly
     if (fy < (0-size*0.5) || fy > (canvas.height+size*0.5)) {
       this.gameover = true
       return
     }
+
+    // check if flappy is touching any pipes and punish him accordingly
     const pipes = ctx.gameObjects.slice(1, -1)
     let nextScore = 0
-    let lastPipe: Pipe
+    let lastPipe: Pipe // this will give us a handle on the last pipe post-loop
     for (let pipe of pipes) {
       const { transform: {x: px, y: py}, width: pWidth, gapSize } = <Pipe>pipe
       const halfGap = gapSize*0.5
       const hitbox = size*0.25
+      // bottom pipe
       if (rectCircleColliding(fx, fy, hitbox, px, 0, pWidth, py-halfGap) ){
         this.gameover = true
         return
       }
+      // top pipe
       if (rectCircleColliding(fx, fy, hitbox, px, py+halfGap, pWidth, canvas.height)) {
         this.gameover = true
         return
       }
+      // count how many pipes we've passed (this is ripe for optimization)
       if ((px+pWidth) < (fx-hitbox)) {
         nextScore++
       }
       lastPipe = <Pipe>pipe
     }
-    this.score = nextScore
+
+    // check if flappy is past the finish and punish him accordingly (poor flappy)
     if (!!lastPipe!) {
       const { transform: {x: px}, width: pWidth } = lastPipe!
       if (fx > ((px+pWidth)+50)) {
@@ -116,6 +126,9 @@ export class Level extends GameObject {
         return
       }
     }
+
+    // and finally, set the score. (also.. punish flappy if necessary)
+    this.score = nextScore
   }
   public render(ctx: GameCtx): void {
     const { canvasCtx, canvasEl } = ctx
@@ -123,5 +136,3 @@ export class Level extends GameObject {
     canvasCtx.fillRect(0, 0, canvasEl.width, canvasEl.height)
   }
 }
-
-

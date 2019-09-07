@@ -4,10 +4,8 @@ import { GameCtx } from "./types"
 import { numInWords } from "./utils"
 
 export class Application {
-  public highScore: number = 0
-  public levelNo: number = 1
   private gameloopTimer?: number
-  constructor(private ctx: GameCtx) {
+  constructor(public ctx: GameCtx) {
     this.registerListeners()
   }
   public run = () => {
@@ -29,8 +27,9 @@ export class Application {
       if (ev.keyCode === 80 /* p */) { this.togglePause() }
     }
   }
-  public togglePause = () => {
-    if (this.gameloopTimer) this.pause()
+  private togglePause = () => {
+    if (this.gameloopTimer)
+      this.pause()
     else this.gameloop()
   }
   private pause = () => {
@@ -44,30 +43,37 @@ export class Application {
     stats.begin()
     this.forEachGameObj('update')
     this.forEachGameObj('render')
-    this.checkGameState()
+    this.updateGameState()
     stats.end()
   }
-  private checkGameState = () => {
+  private updateGameState = () => {
     const level = <Level>this.ctx.gameObjects[0]
+    this.updateHighScore(level)
     if (level.gameover) {
-      this.levelNo = 1
       this.stop()
-      this.updateHighScore(level)
       this.renderBackground("red")
       this.renderGameoverText(level)
+      this.ctx.levelNo = 1
+      this.ctx.score = 0
     } else if (level.levelWon) {
-      this.levelNo++
       this.stop()
-      this.updateHighScore(level)
       this.renderLevelWonText(level)
+      this.ctx.levelNo++
+      this.ctx.score = level.score
     } else {
       this.renderGameScore(level)
     }
   }
-
   private updateHighScore = (level: Level) => {
-    if (level.score > this.highScore) {
-      this.highScore = level.score
+    const playerScore = (this.ctx.score + level.score)
+    if (playerScore > this.ctx.highScore) {
+      this.ctx.highScore = playerScore
+    }
+  }
+
+  private forEachGameObj = (callback: 'update' | 'render') => {
+    for (let gObj of this.ctx.gameObjects) {
+      gObj[callback](this.ctx)
     }
   }
 
@@ -80,14 +86,15 @@ export class Application {
   private renderLevelWonText = (level: Level) => {
     const { canvasCtx, canvasEl } = this.ctx
     const { height, width } = canvasEl
+    const num = numInWords(this.ctx.levelNo)
 
     canvasCtx.font = "36px 'Press Start 2P'"
     canvasCtx.fillStyle = "white"
     canvasCtx.textAlign = "center"
-    canvasCtx.fillText(`Level ${numInWords(level.levelNo)} complete!`, width * 0.5, height * 0.5)
+    canvasCtx.fillText(`Level ${num} complete!`, width * 0.5, height * 0.5)
     canvasCtx.font = "24px 'Press Start 2P'"
     canvasCtx.fillText("press enter", width * 0.5, height * 0.6)
-    this.renderTopScores(canvasCtx, level, width)
+    this.renderTopScores(level, width)
   }
 
   private renderGameoverText = (level: Level) => {
@@ -100,17 +107,17 @@ export class Application {
     canvasCtx.fillText("Game Over", width * 0.5, height * 0.5)
     canvasCtx.font = "24px 'Press Start 2P'"
     canvasCtx.fillText("press enter", width * 0.5, height * 0.6)
-    this.renderTopScores(canvasCtx, level, width)
+    this.renderTopScores(level, width)
   }
 
   private renderGameScore = (level: Level) => {
-    const { canvasCtx, canvasEl } = this.ctx
+    const { canvasCtx, canvasEl, score } = this.ctx
     const { width } = canvasEl
 
     canvasCtx.font = "22px 'Press Start 2P'"
     canvasCtx.fillStyle = "white"
     canvasCtx.textAlign = "right"
-    canvasCtx.fillText(`Score: ${level.score}`, width - 8, 26)
+    canvasCtx.fillText(`Score: ${level.score+score}`, width - 8, 26)
   }
 
   private renderPausedText = () => {
@@ -122,16 +129,12 @@ export class Application {
     canvasCtx.fillText("Paused", width * 0.5, height * 0.5)
   }
 
-  private forEachGameObj = (callback: 'update' | 'render') => {
-    for (let gObj of this.ctx.gameObjects) {
-      gObj[callback](this.ctx)
-    }
-  }
-
-  private renderTopScores(canvasCtx: CanvasRenderingContext2D, level: Level, width: number) {
+  private renderTopScores(level: Level, width: number) {
+    const { canvasCtx, highScore } = this.ctx
+    const score = level.score + this.ctx.score
     canvasCtx.font = "22px 'Press Start 2P'"
     canvasCtx.textAlign = "right"
-    canvasCtx.fillText(`Score: ${level.score}`, width - 8, 26)
-    canvasCtx.fillText(`High Score: ${this.highScore}`, width - 8, 52)
+    canvasCtx.fillText(`Score: ${score}`, width - 8, 26)
+    canvasCtx.fillText(`High Score: ${highScore}`, width - 8, 52)
   }
 }
