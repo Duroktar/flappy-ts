@@ -3,7 +3,7 @@ import { Flappy, Pipe, Level } from './GameObjects'
 import { GameCtxBuilder } from './GameContext'
 import { getRandomInt } from './utils'
 
-export function createApplication(lvlNo: number, score: number, highScore: number) {
+export function createApplication(lvlNo: number, score: number, highScore: number, run = true) {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement
   const context = canvas.getContext('2d') as CanvasRenderingContext2D
   const ctx = new GameCtxBuilder()
@@ -14,7 +14,7 @@ export function createApplication(lvlNo: number, score: number, highScore: numbe
     .withHighScore(highScore)
     .withGameObjects([new Level(), ...getPipes(lvlNo), getFlappy()])
     .build()
-  return new Application(ctx).run()
+  return run ? new Application(ctx).run() : new Application(ctx)
 }
 
 export const getFlappy = () => new Flappy({x: 30, y: 150})

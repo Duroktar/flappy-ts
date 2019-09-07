@@ -48,7 +48,9 @@ module.exports = {
       useHashIndex: true
     }),
     new webpack.DefinePlugin({
-      // SOME_VAR: JSON.stringify(true),
+      "process.env": {
+        NODE_ENV: process.env.NODE_ENV
+      },
     }),
     new HtmlWebpackPlugin({
       template: "./index.html"

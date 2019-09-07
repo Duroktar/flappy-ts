@@ -2,6 +2,8 @@ import { GameCtx, Transform } from './types'
 import { rectCircleColliding } from './utils'
 import flappyImage from '../assets/flappy.png'
 
+const G = 9.8
+
 export abstract class GameObject {
   readonly transform!: Transform
   abstract update(ctx: GameCtx): void
@@ -10,10 +12,11 @@ export abstract class GameObject {
 
 export class Flappy extends GameObject {
   public size: number = 30
-  private fallSpeed: number = 5
+  private fallSpeed: number = 0
   private jumping: boolean = false
-  private jumpSpeed: number = 6
-  private jumpDecay: number = 150
+  private jumpDuration: number = 150
+  private maxFallSpeed: number = 13
+  private minFallSpeed: number = -5
   private image!: HTMLImageElement
   private timer?: NodeJS.Timeout
   constructor(public transform: Transform) {
@@ -28,19 +31,32 @@ export class Flappy extends GameObject {
     if (this.timer) clearTimeout(this.timer)
     this.timer = setTimeout(() => {
       this.jumping = false
-    }, this.jumpDecay)
+    }, this.jumpDuration)
     this.jumping = true
   }
   public update(): void {
     const { x, y } = this.transform
+    if (this.jumping) {
+      this.fallSpeed -= G*0.075
+    } else {
+      this.fallSpeed += G*0.035
+
+    }
+    this.fallSpeed = Math.min(this.maxFallSpeed, this.fallSpeed)
+    this.fallSpeed = Math.max(this.minFallSpeed, this.fallSpeed)
     this.transform = {
-      x, y: this.jumping ? y - this.jumpSpeed : y + this.fallSpeed
+      x, y: y + this.fallSpeed
     }
   }
   public render(ctx: GameCtx): void {
     const { canvasCtx } = ctx
     const { x, y } = this.transform
-    canvasCtx.drawImage(this.image, x, y, 60, 50)
+    canvasCtx.save();
+    canvasCtx.translate(x+60*0.5, y+50*0.5);
+    canvasCtx.rotate(this.fallSpeed*Math.PI/180.0);
+    canvasCtx.translate(-x-60*0.5, -y-50*0.5);
+    canvasCtx.drawImage(this.image, x, y, 60, 50);
+    canvasCtx.restore();
   }
 }
 

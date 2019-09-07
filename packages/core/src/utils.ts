@@ -46,3 +46,19 @@ export function getRandomInt(min: number, max: number) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+/*
+ * Easing Functions - inspired from http://gizma.com/easing/
+ * only considering the t value for the range [0, 1] => [0, 1]
+ */
+export const EasingFunctions = {
+  easeInOutCirc(t: number, b: number, c: number, d: number) {
+    t /= d/2;
+    if (t < 1) return -c/2 * (Math.sqrt(1 - t*t) - 1) + b;
+    t -= 2;
+    return c/2 * (Math.sqrt(1 - t*t) + 1) + b;
+  },
+  easeOutCirc: function (t: number, b: number, c: number, d: number) {
+		return c * Math.sqrt(1 - (t=t/d-1)*t) + b;
+	},
+}

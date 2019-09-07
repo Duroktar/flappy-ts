@@ -1,10 +1,10 @@
 import { Flappy, Level } from "./GameObjects"
-import { stats } from "./stats"
 import { GameCtx } from "./types"
 import { numInWords } from "./utils"
 
 export class Application {
   private gameloopTimer?: number
+  private mode: string = process.env.NODE_ENV || 'development'
   constructor(public ctx: GameCtx) {
     this.registerListeners()
   }
@@ -27,24 +27,24 @@ export class Application {
       if (ev.keyCode === 80 /* p */) { this.togglePause() }
     }
   }
-  private togglePause = () => {
-    if (this.gameloopTimer)
-      this.pause()
-    else this.gameloop()
-  }
-  private pause = () => {
+  public pause = () => {
     if (this.gameloopTimer)
       cancelAnimationFrame(this.gameloopTimer)
     this.gameloopTimer = undefined
     this.renderPausedText()
   }
+  public togglePause = () => {
+    if (this.gameloopTimer)
+      this.pause()
+    else this.gameloop()
+  }
   private gameloop = () => {
     this.gameloopTimer = requestAnimationFrame(this.gameloop)
-    stats.begin()
+    ! this.isProd && require("./stats").begin()
     this.forEachGameObj('update')
     this.forEachGameObj('render')
     this.updateGameState()
-    stats.end()
+    ! this.isProd && require("./stats").end()
   }
   private updateGameState = () => {
     const level = <Level>this.ctx.gameObjects[0]
@@ -59,7 +59,7 @@ export class Application {
       this.stop()
       this.renderLevelWonText(level)
       this.ctx.levelNo++
-      this.ctx.score = level.score
+      this.ctx.score = (level.score+this.ctx.score)
     } else {
       this.renderGameScore(level)
     }
@@ -81,6 +81,10 @@ export class Application {
     const { canvasCtx, canvasEl } = this.ctx
     canvasCtx.fillStyle = color
     canvasCtx.fillRect(0, 0, canvasEl.width, canvasEl.height)
+  }
+
+  private get isProd() {
+    return this.mode !== 'production'
   }
 
   private renderLevelWonText = (level: Level) => {
