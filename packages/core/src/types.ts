@@ -1,7 +1,7 @@
-import { Renderable } from "./Renderable"
+import { GameObject } from "./Renderable"
 
 export interface GameCtx {
-  gameObjects: Renderable[]
+  gameObjects: GameObject[]
   canvasCtx: CanvasRenderingContext2D
   canvasEl: HTMLCanvasElement
 }

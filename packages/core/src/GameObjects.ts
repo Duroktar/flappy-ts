@@ -1,15 +1,15 @@
-import { Renderable } from './Renderable'
+import { GameObject } from './Renderable'
 import { GameCtx, Transform } from './types'
 import { rectCircleColliding } from './utils'
 import flappyImage from '../assets/flappy.png'
 
-export class Flappy extends Renderable {
+export class Flappy extends GameObject {
   public size: number = 30
-  private image!: HTMLImageElement
   private fallSpeed: number = 5
-  private jumpSpeed: number = 6
   private jumping: boolean = false
+  private jumpSpeed: number = 6
   private jumpDecay: number = 150
+  private image!: HTMLImageElement
   private timer?: NodeJS.Timeout
   constructor(public transform: Transform) {
     super()
@@ -40,7 +40,8 @@ export class Flappy extends Renderable {
     canvasCtx.drawImage(this.image, x, y, 60, 50)
   }
 }
-export class Pipe extends Renderable {
+
+export class Pipe extends GameObject {
   public width: number = 110
   public gapSize: number = 140
   private speed: number = 3
@@ -72,19 +73,28 @@ export class Pipe extends Renderable {
   }
 }
 
-export class Level extends Renderable {
+export class Level extends GameObject {
   public score: number = 0
   public gameover: boolean = false
+  public levelWon: boolean = false
+  constructor(public levelNo: number) {
+    super()
+  }
   update(ctx: GameCtx): void {
     const { canvasEl: canvas } = ctx
-    const pipes = ctx.gameObjects.slice(1, -1)
     const flappy = ctx.gameObjects[ctx.gameObjects.length-1]
     const { transform: {x: fx, y: fy}, size } = <Flappy>flappy
+    if (fy < (0-size*0.5) || fy > (canvas.height+size*0.5)) {
+      this.gameover = true
+      return
+    }
+    const pipes = ctx.gameObjects.slice(1, -1)
     let nextScore = 0
+    let lastPipe: Pipe
     for (let pipe of pipes) {
       const { transform: {x: px, y: py}, width: pWidth, gapSize } = <Pipe>pipe
       const halfGap = gapSize*0.5
-      const hitbox = size*0.3
+      const hitbox = size*0.25
       if (rectCircleColliding(fx, fy, hitbox, px, 0, pWidth, py-halfGap) ){
         this.gameover = true
         return
@@ -96,12 +106,20 @@ export class Level extends Renderable {
       if ((px+pWidth) < (fx-hitbox)) {
         nextScore++
       }
+      lastPipe = <Pipe>pipe
     }
     this.score = nextScore
+    if (!!lastPipe!) {
+      const { transform: {x: px}, width: pWidth } = lastPipe!
+      if (fx > ((px+pWidth)+50)) {
+        this.levelWon = true
+        return
+      }
+    }
   }
   public render(ctx: GameCtx): void {
     const { canvasCtx, canvasEl } = ctx
-    canvasCtx.fillStyle = this.gameover ? "red" : "blue"
+    canvasCtx.fillStyle = "blue"
     canvasCtx.fillRect(0, 0, canvasEl.width, canvasEl.height)
   }
 }

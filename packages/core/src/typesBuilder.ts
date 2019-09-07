@@ -1,8 +1,8 @@
-import { Renderable } from "./Renderable"
+import { GameObject } from "./Renderable"
 import { GameCtx } from "./types"
 
 export class GameCtxBuilder {
-  private gameObjects: Renderable[] = []
+  private gameObjects: GameObject[] = []
   private canvasCtx!: CanvasRenderingContext2D
   private canvasEl!: HTMLCanvasElement
 
@@ -14,7 +14,7 @@ export class GameCtxBuilder {
     }
   }
 
-  public withGameObjects(value: Renderable[]) {
+  public withGameObjects(value: GameObject[]) {
     this.gameObjects = value
     return this
   }

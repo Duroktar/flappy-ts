@@ -11,6 +11,8 @@
   "license": "MIT",
   "licenseUrl": "http://www.opensource.org/licenses/mit-license.php",
   "dependencies": {
+    "@types/stats.js": "^0.17.0",
+    "stats.js": "^0.17.0"
   },
   "devDependencies": {
     "@types/node": "^12.7.4",
