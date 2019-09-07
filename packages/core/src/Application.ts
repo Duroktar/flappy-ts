@@ -23,7 +23,17 @@ export class Application {
     const flappy = <Flappy>this.ctx.gameObjects[lastIndex]
     document.onkeydown = (ev: KeyboardEvent) => {
       if (ev.keyCode === 32 /* spacebar */) { flappy.jump() }
+      if (ev.keyCode === 80 /* p */) { this.togglePause() }
     }
+  }
+  public togglePause() {
+    if (this.gameloopTimer) this.pause()
+    else this.gameloop()
+  }
+  private pause() {
+    cancelAnimationFrame(this.gameloopTimer!)
+    this.gameloopTimer = undefined
+    this.renderPausedText()
   }
 
   private gameloop() {
@@ -79,6 +89,15 @@ export class Application {
     canvasCtx.fillStyle = "white"
     canvasCtx.textAlign = "right"
     canvasCtx.fillText(`Score: ${level.score}`, width - 8, 26)
+  }
+
+  private renderPausedText() {
+    const { canvasCtx, canvasEl } = this.ctx
+    const { height, width } = canvasEl
+    canvasCtx.font = "36px 'Press Start 2P'"
+    canvasCtx.fillStyle = "white"
+    canvasCtx.textAlign = "center"
+    canvasCtx.fillText("Paused", width * 0.5, height * 0.5)
   }
 
   private forEachGameObj(callback: 'update' | 'render') {
