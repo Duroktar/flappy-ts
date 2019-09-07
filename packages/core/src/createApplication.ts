@@ -11,5 +11,5 @@ export function createApplication(flappy = getFlappy()) {
     .withCanvasCtx(context)
     .withGameObjects([new Level(), ...getPipes(), flappy])
     .build()
-  return new Application(ctx, flappy).run()
+  return new Application(ctx).run()
 }

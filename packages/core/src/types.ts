@@ -8,4 +8,4 @@ export interface GameCtx {
 export type Transform = {
   x: number
   y: number
-};
+}

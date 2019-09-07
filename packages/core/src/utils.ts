@@ -2,16 +2,16 @@ export function rectCircleColliding(cx: number, cy: number, cr: number, rx: numb
   const distX = Math.abs(cx - rx - rw / 2)
   const distY = Math.abs(cy - ry - rh / 2)
   if (distX > (rw / 2 + cr)) {
-    return false;
+    return false
   }
   if (distY > (rh / 2 + cr)) {
-    return false;
+    return false
   }
   if (distX <= (rw / 2)) {
-    return true;
+    return true
   }
   if (distY <= (rh / 2)) {
-    return true;
+    return true
   }
   const dx = distX - rw / 2
   const dy = distY - rh / 2

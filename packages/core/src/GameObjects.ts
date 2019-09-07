@@ -42,7 +42,7 @@ export class Flappy extends Renderable {
 }
 export class Pipe extends Renderable {
   public width: number = 110
-  public gapSize: number = 130
+  public gapSize: number = 140
   private speed: number = 3
   private direction: 'up' | 'down' = 'up'
   private maxGapTop: number = 50
@@ -82,17 +82,18 @@ export class Level extends Renderable {
     const { transform: {x: fx, y: fy}, size } = <Flappy>flappy
     let nextScore = 0
     for (let pipe of pipes) {
-      const { transform: {x: px, y: py}, width, gapSize } = <Pipe>pipe
+      const { transform: {x: px, y: py}, width: pWidth, gapSize } = <Pipe>pipe
       const halfGap = gapSize*0.5
-      if (rectCircleColliding(fx, fy, size*0.3, px, 0,          width, py-halfGap) ){
+      const hitbox = size*0.3
+      if (rectCircleColliding(fx, fy, hitbox, px, 0, pWidth, py-halfGap) ){
         this.gameover = true
         return
       }
-      if (rectCircleColliding(fx, fy, size*0.3, px, py+halfGap, width, canvas.height)) {
+      if (rectCircleColliding(fx, fy, hitbox, px, py+halfGap, pWidth, canvas.height)) {
         this.gameover = true
         return
       }
-      if (pipe.transform.x < flappy.transform.x) {
+      if ((px+pWidth) < (fx-hitbox)) {
         nextScore++
       }
     }
