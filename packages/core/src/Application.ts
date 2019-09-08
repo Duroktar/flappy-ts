@@ -1,10 +1,10 @@
 import { Flappy, Level } from "./GameObjects"
 import { GameCtx } from "./types"
 import { numInWords } from "./utils"
+import stats from "./stats"
 
 export class Application {
   private gameloopTimer?: number
-  private mode: string = process.env.NODE_ENV || 'development'
   constructor(public ctx: GameCtx) {
     this.registerListeners()
   }
@@ -40,11 +40,11 @@ export class Application {
   }
   private gameloop = () => {
     this.gameloopTimer = requestAnimationFrame(this.gameloop)
-    ! this.isProd && require("./stats").begin()
+    stats.begin()
     this.forEachGameObj('update')
     this.forEachGameObj('render')
     this.updateGameState()
-    ! this.isProd && require("./stats").end()
+    stats.end()
   }
   private updateGameState = () => {
     const level = <Level>this.ctx.gameObjects[0]
@@ -81,10 +81,6 @@ export class Application {
     const { canvasCtx, canvasEl } = this.ctx
     canvasCtx.fillStyle = color
     canvasCtx.fillRect(0, 0, canvasEl.width, canvasEl.height)
-  }
-
-  private get isProd() {
-    return this.mode !== 'production'
   }
 
   private renderLevelWonText = (level: Level) => {
@@ -125,12 +121,15 @@ export class Application {
   }
 
   private renderPausedText = () => {
-    const { canvasCtx, canvasEl } = this.ctx
+    const { canvasCtx, canvasEl, highScore } = this.ctx
     const { height, width } = canvasEl
     canvasCtx.font = "36px 'Press Start 2P'"
     canvasCtx.fillStyle = "white"
     canvasCtx.textAlign = "center"
     canvasCtx.fillText("Paused", width * 0.5, height * 0.5)
+    canvasCtx.font = "22px 'Press Start 2P'"
+    canvasCtx.textAlign = "right"
+    canvasCtx.fillText(`High Score: ${highScore}`, width - 8, 52)
   }
 
   private renderTopScores(level: Level, width: number) {

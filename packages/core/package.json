@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "webpack --config webpack/prod.js ",
-    "serve": "serve -l 9000 dist",
+    "serve": "serve -l 80 dist",
     "start": "webpack-dev-server --config webpack/base.js"
   },
   "author": "Duroktar <duroktar@gmail.com>",
